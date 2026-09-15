@@ -35,6 +35,13 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+    // ViewBinding: genera clases automáticas (ActivityMainBinding, ItemCharacterBinding,
+    // etc.) para acceder a las vistas del XML sin findViewById. Con esto evitamos
+    // errores de casting y mantenemos el acceso tipado y seguro a cada vista.
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
