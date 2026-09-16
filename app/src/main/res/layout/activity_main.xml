@@ -4,20 +4,27 @@
     (un "hueco") donde se alojará el CharacterListFragment.
 
     FragmentContainerView es la vista recomendada para hospedar fragments.
-    El atributo importante es app:navGraph="@navigation/main_graph":
-    convierte este contenedor en un "NavHost", es decir, un punto de anclaje
-    para el grafo de navegación main_graph.xml. Navigation cargará el destino
-    inicial por sí solo (sin transacciones a mano en MainActivity).
-
-    Si se borrara app:navGraph, tendríamos que insertar el fragment manualmente
-    con supportFragmentManager en MainActivity (antiguo estilo).
+    Dos atributos hacen que funcione con Android Navigation:
+      - android:name="androidx.navigation.fragment.NavHostFragment":
+        OBLIGATORIO. Le dice a FragmentContainerView qué fragment crear en su
+        interior. NavHostFragment es la pieza que lee app:navGraph y gestiona
+        todos los destinos del grafo. Sin este atributo, el contenedor queda
+        VACÍO y la pantalla se ve en blanco.
+      - app:navGraph="@navigation/main_graph":
+        El grafo de navegación con los destinos. Lo procesa NavHostFragment
+        (no el contenedor), por eso necesita ir acompañado de android:name.
+      - app:defaultNavHost="true":
+        Hace que este NavHost se registre como el que gestiona el botón atrás
+        del sistema (back) y otras interacciones por defecto.
 -->
 <androidx.fragment.app.FragmentContainerView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/fragment_container"
+    android:name="androidx.navigation.fragment.NavHostFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    app:defaultNavHost="true"
     app:navGraph="@navigation/main_graph"
     tools:context=".presentation.MainActivity">
 </androidx.fragment.app.FragmentContainerView>

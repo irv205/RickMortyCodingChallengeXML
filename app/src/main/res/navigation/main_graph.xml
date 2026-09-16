@@ -11,13 +11,13 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_graph.xml"
+    android:id="@+id/main_graph"
     app:startDestination="@id/characterListFragment">
 
     <!-- Destino inicial: la lista de personajes (CharacterListFragment). -->
     <fragment
         android:id="@+id/characterListFragment"
         android:name="com.irv205.rickmortycodingchallengexml.presentation.character.CharacterListFragment"
-        android:label="fragment_character_list"
+        android:label="@string/fragment_character_list_label"
         tools:layout="@layout/fragment_character_list" />
 </navigation>
