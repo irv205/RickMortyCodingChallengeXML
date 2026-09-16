@@ -1,14 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+    Layout de la MainActivity tras la migración: ahora es SOLO un contenedor
+    (un "hueco") donde se alojará el CharacterListFragment.
+
+    FragmentContainerView es la vista recomendada para hospedar fragments.
+    El atributo importante es app:navGraph="@navigation/main_graph":
+    convierte este contenedor en un "NavHost", es decir, un punto de anclaje
+    para el grafo de navegación main_graph.xml. Navigation cargará el destino
+    inicial por sí solo (sin transacciones a mano en MainActivity).
+
+    Si se borrara app:navGraph, tendríamos que insertar el fragment manualmente
+    con supportFragmentManager en MainActivity (antiguo estilo).
+-->
+<androidx.fragment.app.FragmentContainerView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+    android:id="@+id/fragment_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    app:navGraph="@navigation/main_graph"
     tools:context=".presentation.MainActivity">
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvCharacters"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.fragment.app.FragmentContainerView>

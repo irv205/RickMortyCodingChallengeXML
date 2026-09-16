@@ -1,4 +1,4 @@
-package com.irv205.rickmortycodingchallengexml.presentation
+package com.irv205.rickmortycodingchallengexml.presentation.character
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.irv205.rickmortycodingchallengexml.databinding.ItemCharacterBinding
 import com.irv205.rickmortycodingchallengexml.domain.model.Character
 
@@ -13,6 +14,9 @@ import com.irv205.rickmortycodingchallengexml.domain.model.Character
  * ============================================================
  * ADAPTADOR DEL RECYCLERVIEW (PATRÓN ADAPTER)
  * ============================================================
+ * Este adapter ("CharacterListAdapter") complementa al CharacterListFragment:
+ * el fragment es la vista y el adaptador es quien sabe dibujar cada fila.
+ *
  * Un RecyclerView NO sabe dibujar tus datos: solo sabe que va a mostrar porciones
  * de pantalla llamadas "holders". El patrón Adapter es el puente que le dice:
  *   - Cuántos elementos hay                 (ReciclerView lo pregunta).
@@ -32,11 +36,11 @@ import com.irv205.rickmortycodingchallengexml.domain.model.Character
  */
 
 /**
- * Clase del adaptador. "MainAdapter()" con paréntesis vacíos (constructor sin args):
- * el adaptador no necesita ningún dato de entrada; los personajes le llegan later
- * mediante submitList(...) desde la Activity.
+ * Clase del adaptador. "CharacterListAdapter()" con paréntesis vacíos (constructor
+ * sin args): el adaptador no necesita ningún dato de entrada; los personajes le
+ * llegan later mediante submitList(...) desde el fragment.
  */
-class MainAdapter() : ListAdapter<Character, MainAdapter.ViewHolder>(LaunchesDiffCallback) {
+class CharacterListAdapter() : ListAdapter<Character, CharacterListAdapter.ViewHolder>(CharacterDiffCallback) {
 
     /**
      * onCreateViewHolder: se llama cuando RecyclerView necesita crear UN NUEVO
@@ -79,8 +83,8 @@ class MainAdapter() : ListAdapter<Character, MainAdapter.ViewHolder>(LaunchesDif
      * fila para no buscar las vistas cada vez que se pinta el mismo elemento
      * (una optimización clave de RecyclerView: el holder se reutiliza).
      *
-     * "inner class": necesita acceder a miembros de la clase externa (MainAdapter);
-     * aunque aquí realmente solo usa su propio binding.
+     * "inner class": necesita acceder a miembros de la clase externa
+     * (CharacterListAdapter); aunque aquí realmente solo usa su propio binding.
      *
      * Extiende RecyclerView.ViewHolder(binding.root), que es la vista raíz del layout.
      */
@@ -97,7 +101,7 @@ class MainAdapter() : ListAdapter<Character, MainAdapter.ViewHolder>(LaunchesDif
          */
         fun bind(item: Character) {
             binding.apply {
-                Glide.with(ivCharacter).load(item.image).into(ivCharacter)
+                Glide.with(ivCharacter).load(item.image).transform(RoundedCorners(20)) .into(ivCharacter)
                 tvNameCharacter.text = item.name
                 tvStatus.text = item.status
             }
@@ -120,7 +124,7 @@ class MainAdapter() : ListAdapter<Character, MainAdapter.ViewHolder>(LaunchesDif
  * "estado actualizado". Con esta información ListAdapter decide exactamente qué
  * filas animar/repintar al llegar una lista nueva.
  */
-object LaunchesDiffCallback : DiffUtil.ItemCallback<Character>() {
+object CharacterDiffCallback : DiffUtil.ItemCallback<Character>() {
 
     /**
      * @param oldItem Personaje de la lista anterior.

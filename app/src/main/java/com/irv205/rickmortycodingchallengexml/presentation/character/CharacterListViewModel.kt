@@ -1,4 +1,4 @@
-package com.irv205.rickmortycodingchallengexml.presentation
+package com.irv205.rickmortycodingchallengexml.presentation.character
 
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -18,14 +18,14 @@ import javax.inject.Inject
  * CAPA DE PRESENTACIÓN: VIEWMODEL (ARQUITECTURA MVVM)
  * ============================================================
  * MVVM (Model-View-ViewModel): el ViewModel está en el medio.
- *   - View     (MainActivity): dibuja la pantalla, no tiene lógica.
- *   - ViewModel (esta clase):  obtiene y prepara los datos para la View,
- *                              sobrevive a rotaciones, NO conoce Views.
- *   - Model    (data <-> domain): los datos reales vía repositorio.
+ *   - View      (CharacterListFragment): dibuja la pantalla, no tiene lógica.
+ *   - ViewModel (esta clase): obtiene y prepara los datos para la View,
+ *                             sobrevive a rotaciones, NO conoce Views.
+ *   - Model     (data <-> domain): los datos reales vía repositorio.
  *
  * @HiltViewModel: marca que Hilt debe encargarse de instanciar este ViewModel.
- * Para que funcione, el constructor necesita @Inject (lo tiene abajo) y la
- * Activity que lo use debe estar anotada con @AndroidEntryPoint.
+ * Para que funcione, el constructor necesita @Inject (lo tiene abajo) y el
+ * fragment/Activity que lo use debe estar anotado con @AndroidEntryPoint.
  *
  * LiveData: contenedor "observable". La Vista se SUSCRIBE a él y se entera
  * cuando cambia el valor, sin que el ViewModel tenga que saber de la Vista.
@@ -35,7 +35,7 @@ import javax.inject.Inject
  *   inmutable (characterList) que expone la versión solo-lectura.
  */
 @HiltViewModel
-class MainViewModel @Inject constructor(
+class CharacterListViewModel @Inject constructor(
     private val repository: AppRepository
 ) : ViewModel() {
 
@@ -86,4 +86,5 @@ class MainViewModel @Inject constructor(
             }
         }
     }
+
 }

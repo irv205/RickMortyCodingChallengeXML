@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    GRAFO DE NAVEGACIÓN de la app (Android Navigation).
+    Es el "mapa" de pantallas: declara cada destino (fragment/activity) y las
+    acciones/conexiones entre ellos. Ahora solo hay un destino: la lista.
+
+    - app:startDestination: el destino que se muestra al abrir la app.
+    - <fragment ...>: un destino que es un fragment. android:name apunta a la
+      clase Kotlin real y tools:layout a su layout para el editor visual.
+-->
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_graph.xml"
+    app:startDestination="@id/characterListFragment">
+
+    <!-- Destino inicial: la lista de personajes (CharacterListFragment). -->
+    <fragment
+        android:id="@+id/characterListFragment"
+        android:name="com.irv205.rickmortycodingchallengexml.presentation.character.CharacterListFragment"
+        android:label="fragment_character_list"
+        tools:layout="@layout/fragment_character_list" />
+</navigation>

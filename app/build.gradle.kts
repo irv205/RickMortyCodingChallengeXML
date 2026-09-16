@@ -54,6 +54,10 @@ dependencies {
     implementation(libs.bundles.retrofit)
 
     implementation(libs.hilt.android)
+    // Navigation: FragmentContainerView (con app:navGraph) gestiona los fragments
+    // mediante el grafo main_graph.xml. navigation-fragment-ktx aporta el NavHost.
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
     ksp(libs.hilt.compiler)
 
     implementation(libs.glide.core)
