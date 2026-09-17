@@ -2,6 +2,7 @@ package com.irv205.rickmortycodingchallengexml.data.service
 
 import com.irv205.rickmortycodingchallengexml.data.model.CharactersResponseDTO
 import retrofit2.http.GET
+import retrofit2.http.Url
 
 /**
  * ============================================================
@@ -37,7 +38,21 @@ interface ApiService {
      * El tipo T devuelto (CharactersResponseDTO) debe coincidir con la estructura
      * del JSON que responde el servidor, y se deserializa con el converter
      * Moshi que registramos en NetworkModule.
+     *
+     * Dos métodos para la PAGINACIÓN dirigida por el servidor:
+     *   1) getCharacters(): la llamada INICIAL (URL base /character).
+     *   2) getCharactersByUrl(...): pide la URL exacta de la siguiente página
+     *      (el campo "info.next" que devuelve la API). Retrofit permite dar la
+     *      URL COMPLETA con @Url en vez de solo el path.
      */
     @GET("character")
     suspend fun getCharacters(): CharactersResponseDTO
+
+    /**
+     * @Url url: recibe una URL absoluta (p. ej. "https://rickandmortyapi.com/api/character?page=2").
+     * Es exactamente lo que el servidor manda en "info.next", así el cliente no
+     * construye ni recuerda la URL de la siguiente página.
+     */
+    @GET
+    suspend fun getCharactersByUrl(@Url url: String): CharactersResponseDTO
 }

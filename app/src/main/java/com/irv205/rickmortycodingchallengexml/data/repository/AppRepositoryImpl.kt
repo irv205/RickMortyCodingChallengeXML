@@ -4,7 +4,7 @@ import android.util.Log
 import com.irv205.rickmortycodingchallengexml.core.util.ResponseHandler
 import com.irv205.rickmortycodingchallengexml.data.maper.toDomain
 import com.irv205.rickmortycodingchallengexml.data.service.ApiService
-import com.irv205.rickmortycodingchallengexml.domain.model.Character
+import com.irv205.rickmortycodingchallengexml.domain.model.CharactersPage
 import com.irv205.rickmortycodingchallengexml.domain.repository.AppRepository
 import javax.inject.Inject
 
@@ -33,17 +33,24 @@ class AppRepositoryImpl @Inject constructor(private val service: ApiService) : A
      *      (sin conexión, servidor caído, JSON inesperado, etc.).
      *   2) Cómo usamos corrutinas ("suspend"), la llamada se hace en un hilo
      *      de trabajo y NO bloquea la interfaz de usuario.
-     *   3) El resultado de la API no es List<Character> directo, sino CharactersResponseDTO
-     *      (objeto que trae la lista dentro del campo "results"). Por eso accedemos a .results.
-     *   4) Mapeamos cada CharacterDTO a Character de la capa de dominio con el
-     *      extensor toDomain() definido en data/maper/Mapper.kt.
+     *   3) Si llega una nextPageUrl, pedimos ESA página con getCharactersByUrl(@Url);
+     *      si es null, es la llamada inicial y pedimos la URL base /character.
+     *   4) Mapeamos la respuesta completa con CharactersResponseDTO.toDomain():
+     *      convierte "results" a listas de Character y conserva la URL de la
+     *      siguiente página (info.next) que trae InfoDTO.
      *   5) Devolvemos el resultado envuelto en ResponseHandler.Success o .Error
      *      para que la capa de presentación decida cómo reaccionar sin romperse.
      */
-    override suspend fun getCharacters(): ResponseHandler<List<Character>> {
+    override suspend fun getCharacters(nextPageUrl: String?): ResponseHandler<CharactersPage> {
         return try {
-            // Éxito: datos de la API convertidos al modelo de dominio que la UI entiende.
-            ResponseHandler.Success(service.getCharacters().results.map { it.toDomain() })
+            // Éxito: pedimos la URL exacta del servidor (o la inicial si es null)
+            // y convertimos la respuesta al modelo de dominio + paginación.
+            val response = if (nextPageUrl == null) {
+                service.getCharacters()
+            } else {
+                service.getCharactersByUrl(nextPageUrl)
+            }
+            ResponseHandler.Success(response.toDomain())
         } catch (e: Exception) {
             // Error: registramos el mensaje en Logcat (se ve en Android Studio) y
             // lo propagamos envuelto. Devolvemos un Error determinista, no una excepción.

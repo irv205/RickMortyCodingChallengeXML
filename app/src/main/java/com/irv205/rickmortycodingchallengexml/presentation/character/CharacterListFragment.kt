@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.irv205.rickmortycodingchallengexml.databinding.FragmentCharacterListBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -95,14 +96,35 @@ class CharacterListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 1. La vista le PIDE datos al ViewModel (nunca llama a la red).
-        viewModel.getCharacters()
-
-        // 2. Configuramos el RecyclerView con su adaptador.
+        // 1. La lista la carga el ViewModel SOLO (en su init). El Fragment solo
+        //    observa y reacciona; no lanza la petición aquí para no duplicarla.
         initializeRecyclerViewAndAdapter()
 
-        // 3. Nos SUSCRIBIMOS a los LiveData del ViewModel.
+        // 2. Nos SUSCRIBIMOS a los LiveData del ViewModel.
         observer()
+
+        // 3. Configuramos el scroll infinito: al llegar al final, se pide más.
+        initScrollListener()
+    }
+
+    /**
+     * CONFIGURACIÓN DE PAGINACIÓN (SCROLL INFINITO)
+     * Añade un RecyclerView.OnScrollListener que se dispara cada vez que el
+     * usuario hace scroll (onScrolled). El Fragment NO decide nada: se limita
+     * a reenviar los dos datos del RecyclerView (último item visible y total)
+     * al ViewModel, que es quien tiene la lógica de cuándo cargar más.
+     */
+    private fun initScrollListener() {
+        binding.rvCharacters.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                viewModel.onListScrolled(
+                    lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition(),
+                    totalItemCount = layoutManager.itemCount
+                )
+            }
+        })
     }
 
     /**
@@ -121,6 +143,10 @@ class CharacterListFragment : Fragment() {
     private fun observer() {
         viewModel.characterList.observe(viewLifecycleOwner) {
             adapter.submitList(it)
+        }
+        viewModel.isLoading.observe(viewLifecycleOwner) { loading ->
+            // Mostramos/ocultamos el ProgressBar inferior mientras carga una página.
+            binding.pbLoading.visibility = if (loading) View.VISIBLE else View.GONE
         }
         viewModel.error.observe(viewLifecycleOwner) {
             Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()

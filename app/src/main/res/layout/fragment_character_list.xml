@@ -3,26 +3,39 @@
     Layout del CharacterListFragment: aquí vive la lista de personajes.
     Antes este RecyclerView estaba en activity_main.xml; al migrar la UI al
     fragment, el layout también viaja con él.
+
+    El layout raíz es un LinearLayout vertical que apila:
+      1) rvCharacters : la lista de personajes (peso 1, ocupa todo el espacio).
+      2) pbLoading    : ProgressBar inferior que se muestra MIENTRAS se cargan
+                        más páginas (scroll infinito). Su visibilidad la controla
+                        el Fragment según el LiveData isLoading del ViewModel.
 -->
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".presentation.character.CharacterListFragment">
 
     <!-- RecyclerView que dibuja la lista de personajes. Cada fila usa item_character.xml -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvCharacters"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:layout_marginStart="10dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="10dp"
-        android:layout_marginBottom="10dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_weight="1" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- Spinner de carga de más páginas: visible solo mientras isLoading -->
+    <ProgressBar
+        android:id="@+id/pbLoading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="12dp"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+</LinearLayout>

@@ -2,6 +2,7 @@ package com.irv205.rickmortycodingchallengexml.domain.repository
 
 import com.irv205.rickmortycodingchallengexml.core.util.ResponseHandler
 import com.irv205.rickmortycodingchallengexml.domain.model.Character
+import com.irv205.rickmortycodingchallengexml.domain.model.CharactersPage
 
 /**
  * ============================================================
@@ -20,8 +21,14 @@ import com.irv205.rickmortycodingchallengexml.domain.model.Character
  * Quién la inyecta:  Hilt, mediante RepositoryModule con @Binds.
  *
  * "suspend fun": método asíncrono que se ejecuta en una corrutina,
- * devolviendo ResponseHandler<List<Character>> (éxito o error).
+ * devolviendo ResponseHandler<CharactersPage> (éxito o error). Devolvemos
+ * CharactersPage (y no solo List<Character>) para conservar la info de
+ * paginación que trae la API.
+ *
+ * El parámetro "nextPageUrl" es la URL de la siguiente página que mandó el
+ * servidor en "info.next". null indica la llamada inicial (primera página).
+ * La capa de presentación no calcula números de página: solo reenvía esta URL.
  */
 interface AppRepository {
-    suspend fun getCharacters(): ResponseHandler<List<Character>>
+    suspend fun getCharacters(nextPageUrl: String?): ResponseHandler<CharactersPage>
 }

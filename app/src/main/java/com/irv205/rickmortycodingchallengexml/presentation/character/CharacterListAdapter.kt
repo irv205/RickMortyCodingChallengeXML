@@ -129,21 +129,23 @@ object CharacterDiffCallback : DiffUtil.ItemCallback<Character>() {
     /**
      * @param oldItem Personaje de la lista anterior.
      * @param newItem Personaje de la lista nueva.
-     * @return true si son el mismo elemento. Como la API no devuelve id, aquí
-     *         comparamos el objeto completo con "==" (igualdad estructural de
-     *         data class: todos sus campos). En proyectos reales se compara por
-     *         un campo identificador único (id).
+     * @return true si son el mismo elemento. Ahora comparamos por "id" (campo
+     *         único que añadimos al modelo de dominio) en vez de por igualdad
+     *         estructural. Es OBLIGATORIO con la paginación: el adaptador recibe
+     *         la lista ACUMULADA (página 1 + página 2 + ...) y con el id puede
+     *         identificar los items que ya existen y solo dibujar/animar los
+     *         personajes NUEVOS que llegan con cada página.
      */
     override fun areItemsTheSame(oldItem: Character, newItem: Character): Boolean {
-        return oldItem == newItem
+        return oldItem.id == newItem.id
     }
 
     /**
      * @param oldItem Personaje de la lista anterior.
      * @param newItem Personaje de la lista nueva.
      * @return true si, siendo el mismo elemento, su contenido NO ha cambiado
-     *         (no hace falta repintar). Aquí se compara también con "==" por
-     *         simplicidad; si devuelve "true" siempre, nunca se re-dibuja.
+     *         (no hace falta repintar). Como la lista es inmutable (data class),
+     *         comparar con "==" es suficiente.
      */
     override fun areContentsTheSame(oldItem: Character, newItem: Character): Boolean {
         return oldItem == newItem

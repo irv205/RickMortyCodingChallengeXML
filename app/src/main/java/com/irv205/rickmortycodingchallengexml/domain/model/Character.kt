@@ -18,6 +18,7 @@ package com.irv205.rickmortycodingchallengexml.domain.model
  * copy() y los getters/setters. Perfecta para puras portadoras de datos.
  */
 data class Character(
+    val id: Int,        // Identificador único del personaje en la API
     val name: String,   // Nombre del personaje (ej: "Rick Sanchez")
     val status: String, // Estado actual (ej: "Alive")
     val image: String   // URL de la imagen del personaje
