@@ -2,58 +2,79 @@ package com.irv205.rickmortycodingchallengexml.data.repository
 
 import android.util.Log
 import com.irv205.rickmortycodingchallengexml.core.util.ResponseHandler
-import com.irv205.rickmortycodingchallengexml.data.maper.toDomain
-import com.irv205.rickmortycodingchallengexml.data.service.ApiService
+import com.irv205.rickmortycodingchallengexml.data.datasource.local.LocalDataSource
+import com.irv205.rickmortycodingchallengexml.data.datasource.remote.RemoteDataSource
 import com.irv205.rickmortycodingchallengexml.domain.model.CharactersPage
 import com.irv205.rickmortycodingchallengexml.domain.repository.AppRepository
 import javax.inject.Inject
 
 /**
  * ============================================================
- * CAPA DE DATOS: IMPLEMENTACIÓN DEL REPOSITORIO
+ * CAPA DE DATOS: IMPLEMENTACIÓN DEL REPOSITORIO (ORQUESTADOR)
  * ============================================================
  * El patrón Repository es la "frontera" entre los datos y el resto de la app.
- * La app (ViewModel) NO sabe de dónde vienen los datos (red, base local, cache...):
- * solo conoce la interfaz [AppRepository]. Aquí decidimos que los datos
- * vienen de la API mediante Retrofit ([ApiService]).
+ * La app (ViewModel) NO sabe de dónde vienen los datos: solo conoce la interfaz
+ * [AppRepository].
  *
- * Ventaja: si mañana cambiamos la API por una base de datos local, solo
- * cambiaremos ESTA clase y el resto de la app no se entera.
+ * El repositorio NO habla con Retrofit ni con Room directamente: eso es cosa de
+ * los DATA SOURCES. Aquí solo se ORQUESTA la estrategia (la "política"):
+ *   - RemoteDataSource : fuente remota (red). Volver a "RemoteDataSource".
+ *   - LocalDataSource  : fuente local (Room / offline).
+ *
+ * Estrategia OFFLINE-FIRST (primero lo local) implementada aquí:
+ *   - Primera página: revisamos la BD local. Si hay datos, los devolvemos
+ *     (funcionamos sin Internet). Si está vacía, pedimos a la API y guardamos.
+ *   - Páginas siguientes: siempre a la red y se acumulan en la BD local.
  */
-class AppRepositoryImpl @Inject constructor(private val service: ApiService) : AppRepository {
+class AppRepositoryImpl @Inject constructor(
+    private val remoteDataSource: RemoteDataSource,
+    private val localDataSource: LocalDataSource
+) : AppRepository {
 
     /**
      * Implementación concreta del método definido en la interfaz AppRepository.
      *
      * "override suspend": confirma que es la versión implementada de un método
-     * "suspend" de la interfaz, por lo que puede llamar a la API de forma asíncrona.
+     * "suspend" de la interfaz, por lo que puede llamar a las fuentes de forma
+     * asíncrona (con corrutinas, fuera del hilo principal).
      *
-     * Flujo de la función:
-     *   1) try/catch: envolvemos la llamada de red para capturar cualquier error
-     *      (sin conexión, servidor caído, JSON inesperado, etc.).
-     *   2) Cómo usamos corrutinas ("suspend"), la llamada se hace en un hilo
-     *      de trabajo y NO bloquea la interfaz de usuario.
-     *   3) Si llega una nextPageUrl, pedimos ESA página con getCharactersByUrl(@Url);
-     *      si es null, es la llamada inicial y pedimos la URL base /character.
-     *   4) Mapeamos la respuesta completa con CharactersResponseDTO.toDomain():
-     *      convierte "results" a listas de Character y conserva la URL de la
-     *      siguiente página (info.next) que trae InfoDTO.
-     *   5) Devolvemos el resultado envuelto en ResponseHandler.Success o .Error
-     *      para que la capa de presentación decida cómo reaccionar sin romperse.
+     * Flujo de la función (solo orquestación, sin detalles de red ni de BD):
+     *   1) nextPageUrl == null (llamada INICIAL):
+     *        - Consultamos LocalDataSource: si hay personajes, los devolvemos
+     *          con nextPageUrl = null (esos datos locales no tienen más páginas).
+     *        - Si está vacía, pedimos la página 1 a RemoteDataSource y la
+     *          guardamos en LocalDataSource.
+     *   2) nextPageUrl != null (SCROLL a la página siguiente):
+     *        - Pedimos esa página a RemoteDataSource y la acumulamos en local.
+     *   3) Todo el resultado se envuelve en ResponseHandler.Success o .Error.
      */
     override suspend fun getCharacters(nextPageUrl: String?): ResponseHandler<CharactersPage> {
         return try {
-            // Éxito: pedimos la URL exacta del servidor (o la inicial si es null)
-            // y convertimos la respuesta al modelo de dominio + paginación.
-            val response = if (nextPageUrl == null) {
-                service.getCharacters()
+            val charactersPage = if (nextPageUrl == null) {
+                // MODO OFFLINE: primero revisamos si ya tenemos datos guardados.
+                val cached = localDataSource.getCharacters()
+                if (cached.isNotEmpty()) {
+                    // Hay datos locales: los usamos (no tocamos la red).
+                    CharactersPage(
+                        characters = cached,
+                        nextPageUrl = null
+                    )
+                } else {
+                    // BD vacía: pedimos a la red y guardamos la página recibida.
+                    val page = remoteDataSource.getCharacters()
+                    localDataSource.saveCharacters(page.characters)
+                    page
+                }
             } else {
-                service.getCharactersByUrl(nextPageUrl)
+                // Página siguiente: siempre a la red; acumulamos en la BD local.
+                val page = remoteDataSource.getCharactersByUrl(nextPageUrl)
+                localDataSource.saveCharacters(page.characters)
+                page
             }
-            ResponseHandler.Success(response.toDomain())
+            ResponseHandler.Success(charactersPage)
         } catch (e: Exception) {
-            // Error: registramos el mensaje en Logcat (se ve en Android Studio) y
-            // lo propagamos envuelto. Devolvemos un Error determinista, no una excepción.
+            // Error: lo registramos y lo propagamos envuelto.
+            // Devolvemos un Error determinista, no una excepción.
             Log.e("ERROR", e.message.toString())
             ResponseHandler.Error(message = e.message ?: "")
         }

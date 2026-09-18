@@ -64,6 +64,9 @@ dependencies {
     ksp(libs.glide.ksp)
     implementation(libs.bundles.ktx)
 
+    implementation(libs.bundles.room)
+    ksp(libs.room.compiler)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
