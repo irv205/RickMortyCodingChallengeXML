@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Layout de CADA FILA de la lista (item del RecyclerView).
+    Es el "holder visual" que repinta CharacterListAdapter con cada personaje:
+
+    - ivCharacter      : la foto (Glide la carga y la cachea).
+    - tvCharacterId    : identificador del personaje (dato de la API).
+    - tvNameCharacter  : el nombre.
+    - tvStatus         : estado (Alive / Dead / Unknown).
+
+    Está centrado verticalmente y con la imagen a la izquierda; los textos
+    comparten el espacio de la derecha. El adapter rellena estos valores en
+    ViewHolder.bind(...). El click de toda la fila lo asigna el adapter.
+-->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -8,12 +21,23 @@
     android:layout_marginEnd="10dp"
     android:layout_marginBottom="10dp">
 
+    <!-- Foto del personaje: fija a la izquierda, centrada verticalmente. -->
     <ImageView
         android:id="@+id/ivCharacter"
         android:layout_width="100dp"
         android:layout_height="100dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Id del personaje (de la API): pequeña etiqueta arriba a la derecha. -->
+    <TextView
+        android:id="@+id/tvCharacterId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/tvNameCharacter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/ivCharacter"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView

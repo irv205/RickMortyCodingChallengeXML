@@ -33,6 +33,10 @@ object DataModule {
      *     Activity o Fragment (no debe filtrarse su ciclo de vida).
      *   - AppDatabase::class.java: la clase con el @Database.
      *   - "rick_morty.db": nombre del archivo de la BD en el dispositivo.
+     *   - addMigrations(MIGRATION_1_2): registra la migración a la versión 2.
+     *     Sin esto, un usuario con la BD v1 (sin tabla page_info) CRASHEARÍA
+     *     al actualizar; con la migración se le crea la tabla y conserva sus
+     *     personajes guardados.
      * @Singleton: una única instancia para toda la app.
      */
     @Provides
@@ -44,7 +48,7 @@ object DataModule {
             context,
             AppDatabase::class.java,
             "rick_morty.db"
-        ).build()
+        ).addMigrations(AppDatabase.MIGRATION_1_2).build()
     }
 
     /**

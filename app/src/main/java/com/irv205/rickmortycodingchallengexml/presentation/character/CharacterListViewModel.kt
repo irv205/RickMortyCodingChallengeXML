@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.irv205.rickmortycodingchallengexml.core.util.ResponseHandler
 import com.irv205.rickmortycodingchallengexml.domain.model.Character
-import com.irv205.rickmortycodingchallengexml.domain.repository.AppRepository
+import com.irv205.rickmortycodingchallengexml.domain.usecase.GetCharactersUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,7 +21,10 @@ import javax.inject.Inject
  *   - View      (CharacterListFragment): dibuja la pantalla, no tiene lógica.
  *   - ViewModel (esta clase): obtiene y prepara los datos para la View,
  *                             sobrevive a rotaciones, NO conoce Views.
- *   - Model     (data <-> domain): los datos reales vía repositorio.
+ *   - Model     (data <-> domain): los datos reales vía casos de uso.
+ *
+ * El ViewModel NO llama al repositorio directo: usa el caso de uso de dominio
+ * GetCharactersUseCase (una acción de negocio con nombre explícito).
  *
  * @HiltViewModel: marca que Hilt debe encargarse de instanciar este ViewModel.
  * Para que funcione, el constructor necesita @Inject (lo tiene abajo) y el
@@ -45,7 +48,7 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class CharacterListViewModel @Inject constructor(
-    private val repository: AppRepository
+    private val getCharactersUseCase: GetCharactersUseCase
 ) : ViewModel() {
 
     // Data class Character de la capa de dominio, lista acumulada de personajes.
@@ -122,7 +125,7 @@ class CharacterListViewModel @Inject constructor(
         _isLoading.value = true
 
         viewModelScope.launch(Dispatchers.IO) {
-            when (val response = repository.getCharacters(nextPageUrl = url)) {
+            when (val response = getCharactersUseCase(url)) {
                 is ResponseHandler.Error<*> -> {
                     _isLoading.postValue(false)
                     _error.postValue(response.message)
@@ -131,7 +134,14 @@ class CharacterListViewModel @Inject constructor(
                 is ResponseHandler.Success -> {
                     response.data.let { result ->
                         nextPageUrl = result.nextPageUrl
-                        _characterList.postValue(currentList + result.characters)
+                        // distinctBy { it.id }: red de seguridad ante duplicados.
+                        // Combinamos la lista actual + lo nuevo y descartamos
+                        // cualquier personaje que ya estuviera (conservamos la
+                        // primera aparición = el orden real). Así, aunque una
+                        // ruta de datos devuelva solapamientos (estados viejos
+                        // de caché), la UI nunca muestra repetidos.
+                        val updatedList = (currentList + result.characters).distinctBy { it.id }
+                        _characterList.postValue(updatedList)
                         // Solo depuración: ver los datos en Logcat de Android Studio.
                         Log.e("PERSONAJES======", result.characters.toString())
                         _isLoading.postValue(false)

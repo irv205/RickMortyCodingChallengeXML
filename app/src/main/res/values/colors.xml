@@ -2,4 +2,7 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <!-- Color de relleno para las imágenes de la lista mientras cargan con
+         Glide (placeholder) o si ocurre un error. Gris claro neutro. -->
+    <color name="image_placeholder">#FFE0E0E0</color>
 </resources>

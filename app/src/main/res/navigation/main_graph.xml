@@ -2,11 +2,14 @@
 <!--
     GRAFO DE NAVEGACIÓN de la app (Android Navigation).
     Es el "mapa" de pantallas: declara cada destino (fragment/activity) y las
-    acciones/conexiones entre ellos. Ahora solo hay un destino: la lista.
+    acciones/conexiones entre ellos. Tiene dos destinos: la lista y el detalle.
 
     - app:startDestination: el destino que se muestra al abrir la app.
     - <fragment ...>: un destino que es un fragment. android:name apunta a la
       clase Kotlin real y tools:layout a su layout para el editor visual.
+    - <argument ...>: dato OBLIGATORIO que el destino espera al abrirse.
+      En este caso, el id del personaje que se quiere ver.
+    - <action ...>: conexión navegable entre dos destinos (lista -> detalle).
 -->
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -19,5 +22,27 @@
         android:id="@+id/characterListFragment"
         android:name="com.irv205.rickmortycodingchallengexml.presentation.character.CharacterListFragment"
         android:label="@string/fragment_character_list_label"
-        tools:layout="@layout/fragment_character_list" />
+        tools:layout="@layout/fragment_character_list">
+
+        <!-- Acción "ir al detalle": solo se puede llegar desde la lista.
+             Es la conexión que usará el click sobre un personaje. -->
+        <action
+            android:id="@+id/action_characterListFragment_to_characterDetailsFragment"
+            app:destination="@id/characterDetailsFragment" />
+    </fragment>
+
+    <!-- Destino de EL DETALLE de un personaje (CharacterDetailsFragment).
+         Espera un argumento OBLIGATORIO: characterId (enteros), el id del
+         personaje elegido. Por eso, si se abre sin ese dato, la app falla
+         deliberadamente: es un error de programación, no de ejecución. -->
+    <fragment
+        android:id="@+id/characterDetailsFragment"
+        android:name="com.irv205.rickmortycodingchallengexml.presentation.character.CharacterDetailsFragment"
+        android:label="@string/fragment_character_details_label"
+        tools:layout="@layout/fragment_character_details">
+
+        <argument
+            android:name="characterId"
+            app:argType="integer" />
+    </fragment>
 </navigation>

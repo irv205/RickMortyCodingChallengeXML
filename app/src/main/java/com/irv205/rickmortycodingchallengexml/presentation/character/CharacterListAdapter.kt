@@ -7,6 +7,8 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestOptions
+import com.irv205.rickmortycodingchallengexml.R
 import com.irv205.rickmortycodingchallengexml.databinding.ItemCharacterBinding
 import com.irv205.rickmortycodingchallengexml.domain.model.Character
 
@@ -36,11 +38,51 @@ import com.irv205.rickmortycodingchallengexml.domain.model.Character
  */
 
 /**
- * Clase del adaptador. "CharacterListAdapter()" con paréntesis vacíos (constructor
- * sin args): el adaptador no necesita ningún dato de entrada; los personajes le
- * llegan later mediante submitList(...) desde el fragment.
+ * Clase del adaptador. Constructor con UN parámetro:
+ *   - onItemClick: (Character) -> Unit. Es una FUNCIÓN que el adaptador ejecuta
+ *     cuando el usuario PULSA una fila. Quién la crea (el fragment) decide QUÉ
+ *     pasa con el carácter pulsado; el adaptador solo avisa. De esta forma el
+ *     adaptador permanece genérico y no sabe nada de navegación.
+ *
+ * @param onItemClick Callback que recibe el Character de la fila pulsada.
  */
-class CharacterListAdapter() : ListAdapter<Character, CharacterListAdapter.ViewHolder>(CharacterDiffCallback) {
+class CharacterListAdapter(
+    private val onItemClick: (Character) -> Unit = {}
+) : ListAdapter<Character, CharacterListAdapter.ViewHolder>(CharacterDiffCallback) {
+
+    /**
+     * Opciones base de Glide para TODAS las imágenes de la lista:
+     *   - centerCrop(): recorta y centra la imagen para rellenar el ImageView.
+     *   - override(200, 200): fuerza la decodificación a un tamaño pequeño.
+     *     La fila muestra la imagen en 100dp; cargar el JPEG original (puede
+     *     ser de 300x300 o más) es despilfarro de memoria y tiempo. Al fijar
+     *     tamaño, la descarga es MÁS LIGERA y más fácil de cachear.
+     *   - placeholder / error: colores de relleno mientras carga y si falla.
+     *     RequestOptions es INMUTABLE: las .xxx() devuelven copias nuevas,
+     *     por eso se puede compartir sin que se "contamine".
+     */
+    private val baseOptions = RequestOptions()
+        .centerCrop()
+        .override(200, 200)
+        .placeholder(R.color.image_placeholder)
+        .error(R.color.image_placeholder)
+
+    /**
+     * Modo "solo caché". El fragment lo activa mientras el usuario hace scroll
+     * y lo desactiva al frenar (IDLE):
+     *   - true  -> Glide SOLO lee de memoria/disco. Si la imagen ya se cargó
+     *              antes aparece AL INSTANTE; si no, se queda con el placeholder.
+     *              Así durante el scroll no se satura la red ni se disparan
+     *              decenas de descargas simultáneas (evita errores al hacer
+     *              fling rápido).
+     *   - false -> Glide carga de la red normalmente.
+     */
+    private var loadImagesFromCacheOnly = false
+
+    /** Público: el fragment lo llama desde su scroll listener. */
+    fun setLoadImagesFromCache(cacheOnly: Boolean) {
+        loadImagesFromCacheOnly = cacheOnly
+    }
 
     /**
      * onCreateViewHolder: se llama cuando RecyclerView necesita crear UN NUEVO
@@ -90,21 +132,54 @@ class CharacterListAdapter() : ListAdapter<Character, CharacterListAdapter.ViewH
      */
     inner class ViewHolder(private val binding: ItemCharacterBinding) : RecyclerView.ViewHolder(binding.root) {
 
+        // El Character que este holder pinta ahora mismo. Lo guardamos para
+        // poder repintar la fila sin depender de su posición (ver rebind()).
+        private var currentItem: Character? = null
+
         /**
          * bind: rellena las vistas del holder con los datos del Character.
          * binding.apply { ... } permite referirse a las vistas del binding (ivCharacter,
          * tvNameCharacter, tvStatus) SIN escribir "binding." delante de cada una.
          *
-         * Glide es la librería de imágenes que elegimos:
-         *   Glide.with(contexto).load(url).into(imageView)
-         * descarga la imagen de Internet EN SEGUNDO PLANO, la cachea y la pinta.
+         * Glide recibe:
+         *   - .apply(options)       : placeholder/error y "solo caché o red"
+         *                             (según el modo activado por el scroll).
+         *   - .transform(RoundedCorners(20)) : esquinas redondeadas.
+         *
+         * La ÚLTIMA línea asigna el Listener de click sobre TODA la fila
+         * (itemView es la vista raíz del layout que inflamos: recuerda, en
+         * ViewHolder(...) pasamos binding.root ESO es itemView). Al pulsar
+         * cualquier zona del item, se ejecuta onItemClick(item) con SU personaje.
          */
         fun bind(item: Character) {
+            currentItem = item
             binding.apply {
-                Glide.with(ivCharacter).load(item.image).transform(RoundedCorners(20)) .into(ivCharacter)
+                // En modo solo-caché le pedimos a Glide que NI INTENTE la red;
+                // así el scroll se mantiene fluido y no satura la API.
+                val options = if (loadImagesFromCacheOnly) {
+                    baseOptions.onlyRetrieveFromCache(true)
+                } else {
+                    baseOptions
+                }
+                Glide.with(ivCharacter)
+                    .load(item.image)
+                    .apply(options)
+                    .transform(RoundedCorners(20))
+                    .into(ivCharacter)
                 tvNameCharacter.text = item.name
                 tvStatus.text = item.status
             }
+            // Click en la fila -> ejecutamos el callback con el personaje pulsado.
+            itemView.setOnClickListener { onItemClick(item) }
+        }
+
+        /**
+         * Repinta el holder con su item actual. Lo usa el fragment al llegar al
+         * estado IDLE: las filas visibles que se quedaron con placeholder por el
+         * scroll rápido ahora se descargan de la red de verdad.
+         */
+        fun rebind() {
+            currentItem?.let { bind(it) }
         }
     }
 }

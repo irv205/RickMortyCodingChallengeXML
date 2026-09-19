@@ -2,4 +2,13 @@
     <string name="app_name">Rick&amp;MortyCodingChallengeXML</string>
     <!-- Etiqueta del destino CharacterListFragment en el grafo de navegación. -->
     <string name="fragment_character_list_label">Lista de personajes</string>
+    <!-- Etiqueta del destino CharacterDetailsFragment en el grafo de navegación. -->
+    <string name="fragment_character_details_label">Detalle del personaje</string>
+    <!-- Etiquetas de la pantalla de detalle. -->
+    <string name="character_name">Nombre</string>
+    <string name="character_status">Estado</string>
+    <string name="character_species">Especie</string>
+    <string name="character_gender">Género</string>
+    <string name="character_origin">Origen</string>
+    <string name="character_location">Ubicación</string>
 </resources>

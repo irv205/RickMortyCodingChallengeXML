@@ -2,6 +2,7 @@ package com.irv205.rickmortycodingchallengexml.data.datasource.remote
 
 import com.irv205.rickmortycodingchallengexml.data.maper.toDomain
 import com.irv205.rickmortycodingchallengexml.data.service.ApiService
+import com.irv205.rickmortycodingchallengexml.domain.model.Character
 import com.irv205.rickmortycodingchallengexml.domain.model.CharactersPage
 import javax.inject.Inject
 
@@ -35,5 +36,13 @@ class RemoteDataSource @Inject constructor(private val service: ApiService) {
      */
     suspend fun getCharactersByUrl(url: String): CharactersPage {
         return service.getCharactersByUrl(url).toDomain()
+    }
+
+    /**
+     * Pide UN personaje por su id (/character/{id}).
+     * @param id Identificador del personaje.
+     */
+    suspend fun getCharacterById(id: Int): Character {
+        return service.getCharacterById(id).toDomain()
     }
 }

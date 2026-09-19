@@ -1,7 +1,9 @@
 package com.irv205.rickmortycodingchallengexml.data.service
 
+import com.irv205.rickmortycodingchallengexml.data.model.CharacterDTO
 import com.irv205.rickmortycodingchallengexml.data.model.CharactersResponseDTO
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Url
 
 /**
@@ -55,4 +57,12 @@ interface ApiService {
      */
     @GET
     suspend fun getCharactersByUrl(@Url url: String): CharactersResponseDTO
+
+    /**
+     * Detalle de UN personaje: /character/{id} -> p. ej. /character/1.
+     * @Path("id") sustituye "{id}" dentro de la URL por el valor que pasemos.
+     * Devuelve el DTO de un solo personaje (sin "info" ni lista).
+     */
+    @GET("character/{id}")
+    suspend fun getCharacterById(@Path("id") id: Int): CharacterDTO
 }

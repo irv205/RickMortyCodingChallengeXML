@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Layout de CharacterDetailsFragment: la pantalla de DETALLE de un personaje.
+    Muestra la ficha completa del personaje elegido en la lista.
+
+    Estructura:
+      - ScrollView: permite desplazarse si el contenido (fotos + textos) no
+        cabe en pantalla. Su hijo debe ocupar "wrap_content" y tener soporte.
+      - ConstraintLayout: organiza los campos con restricciones.
+      - tvCharacterName y tvCharacterStatus se recalculan para que el texto del
+        estado tenga su propio tamaño y no se corte con el lateral.
+
+    Los valores se rellenan en CharacterDetailsFragment leyendo de los
+    LiveData del ViewModel (observer). Todos los textos son strings.xml.
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:padding="16dp"
+    tools:context=".presentation.character.CharacterDetailsFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/characterDetailsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Progreso mientras cargan los datos del personaje.
+             El fragment lo muestra/oculta según viewModel.isLoading. -->
+        <ProgressBar
+            android:id="@+id/pbCharacterDetails"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Foto del personaje: centrada arriba y con esquinas redondeadas. -->
+        <ImageView
+            android:id="@+id/ivCharacterImage"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:contentDescription="@string/character_name"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Nombre del personaje. -->
+        <TextView
+            android:id="@+id/tvCharacterName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ivCharacterImage" />
+
+        <!-- Fila: Estado (Alive/Dead/Unknown). -->
+        <TextView
+            android:id="@+id/tvStatusLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:text="@string/character_status"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvCharacterName" />
+
+        <TextView
+            android:id="@+id/tvCharacterStatus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:gravity="end"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/tvStatusLabel"
+            app:layout_constraintTop_toTopOf="@+id/tvStatusLabel" />
+
+        <!-- Fila: Especie. -->
+        <TextView
+            android:id="@+id/tvSpeciesLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:text="@string/character_species"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvStatusLabel" />
+
+        <TextView
+            android:id="@+id/tvCharacterSpecies"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:gravity="end"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/tvSpeciesLabel"
+            app:layout_constraintTop_toTopOf="@+id/tvSpeciesLabel" />
+
+        <!-- Fila: Género. -->
+        <TextView
+            android:id="@+id/tvGenderLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:text="@string/character_gender"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvSpeciesLabel" />
+
+        <TextView
+            android:id="@+id/tvCharacterGender"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:gravity="end"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/tvGenderLabel"
+            app:layout_constraintTop_toTopOf="@+id/tvGenderLabel" />
+
+        <!-- Fila: Origen. -->
+        <TextView
+            android:id="@+id/tvOriginLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:text="@string/character_origin"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvGenderLabel" />
+
+        <TextView
+            android:id="@+id/tvCharacterOrigin"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:gravity="end"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/tvOriginLabel"
+            app:layout_constraintTop_toTopOf="@+id/tvOriginLabel" />
+
+        <!-- Fila: Ubicación actual. -->
+        <TextView
+            android:id="@+id/tvLocationLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:text="@string/character_location"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvOriginLabel" />
+
+        <TextView
+            android:id="@+id/tvCharacterLocation"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:gravity="end"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/tvLocationLabel"
+            app:layout_constraintTop_toTopOf="@+id/tvLocationLabel" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

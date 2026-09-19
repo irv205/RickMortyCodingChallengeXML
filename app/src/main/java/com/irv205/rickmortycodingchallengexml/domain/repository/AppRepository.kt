@@ -31,4 +31,12 @@ import com.irv205.rickmortycodingchallengexml.domain.model.CharactersPage
  */
 interface AppRepository {
     suspend fun getCharacters(nextPageUrl: String?): ResponseHandler<CharactersPage>
+
+    /**
+     * Detalle de un personaje.
+     * @param id Identificador del personaje (el que llega por navegación).
+     * @return ResponseHandler<Character>: éxito con todos los datos del
+     *         personaje, o un error determinista.
+     */
+    suspend fun getCharacterById(id: Int): ResponseHandler<Character>
 }

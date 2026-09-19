@@ -5,10 +5,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.irv205.rickmortycodingchallengexml.R
 import com.irv205.rickmortycodingchallengexml.databinding.FragmentCharacterListBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -54,8 +57,28 @@ class CharacterListFragment : Fragment() {
     // nunca es null porque lo asignamos en onCreateView antes de usarlo.
     private val binding get() = requireNotNull(_binding)
 
-    /** Mismo adaptador que antes, perezoso (se crea solo la 1ª vez que se accede). */
-    private val adapter by lazy { CharacterListAdapter() }
+    /**
+     * Mismo adaptador que antes, perezoso (se crea solo la 1ª vez que se accede).
+     * Ahora el adaptador recibe un CALLBACK de click: cuando el usuario pulsa una
+     * fila, el propio adaptador nos avisa con el Character pulsado y aquí decidimos
+     * qué hacer: navegar al detalle con su id.
+     */
+    private val adapter by lazy {
+        CharacterListAdapter { character -> navigateToDetails(character.id) }
+    }
+
+    /**
+     * NAVEGACIÓN AL DETALLE: findNavController() localiza el NavHost de la app
+     * (la FragmentContainerView) y .navigate() ejecuta la transición declarada
+     * como action en main_graph.xml. Le pasamos el id del personaje en un Bundle:
+     * ese dato viaja como "characterId" y lo lee CharacterDetailsFragment.
+     */
+    private fun navigateToDetails(characterId: Int) {
+        findNavController().navigate(
+            R.id.action_characterListFragment_to_characterDetailsFragment,
+            bundleOf("characterId" to characterId)
+        )
+    }
 
     /**
      * viewModels() (de fragments): obtiene el CharacterListViewModel asociado a
@@ -108,11 +131,21 @@ class CharacterListFragment : Fragment() {
     }
 
     /**
-     * CONFIGURACIÓN DE PAGINACIÓN (SCROLL INFINITO)
+     * CONFIGURACIÓN DE PAGINACIÓN (SCROLL INFINITO) + GESTIÓN DE IMÁGENES
      * Añade un RecyclerView.OnScrollListener que se dispara cada vez que el
-     * usuario hace scroll (onScrolled). El Fragment NO decide nada: se limita
-     * a reenviar los dos datos del RecyclerView (último item visible y total)
-     * al ViewModel, que es quien tiene la lógica de cuándo cargar más.
+     * usuario hace scroll. Dos responsabilidades:
+     *
+     * 1) PAGINACIÓN (onScrolled): el Fragment NO decide nada; reenvía los dos
+     *    números del RecyclerView (último item visible y total) al ViewModel,
+     *    que es quien tiene la lógica de cuándo cargar más.
+     *
+     * 2) IMÁGENES FLUIDAS (onScrollStateChanged): mientras el usuario está
+     *    SCROLLANDO (arrastrando o con inercia), le decimos al adapter que las
+     *    imágenes solo vengan de la CACHÉ (aparecen al instante o placeholder,
+     *    y no saturan la API con decenas de descargas a la vez, evitando los
+     *    errores con scroll rápido). Cuando el dedo se DETIENE (IDLE), volvemos
+     *    al modo RED y repintamos las filas visibles para que descarguen las
+     *    imágenes que faltan.
      */
     private fun initScrollListener() {
         binding.rvCharacters.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -124,7 +157,39 @@ class CharacterListFragment : Fragment() {
                     totalItemCount = layoutManager.itemCount
                 )
             }
+
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                // ¿El usuario detuvo el scroll? (dedo levantado o inercia terminada)
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    adapter.setLoadImagesFromCache(false)
+                    // Repintamos SOLO las filas visibles: las que se quedaron con
+                    // placeholder por el scroll rápido ahora descargan de la red.
+                    rebindVisibleItems(recyclerView)
+                } else {
+                    // Scroll en movimiento: solo caché, fluido y sin saturar la red.
+                    adapter.setLoadImagesFromCache(true)
+                }
+            }
         })
+    }
+
+    /**
+     * Lee las filas actualmente VISIBLES en pantalla y las repinta (rebind).
+     * Es lo que desbloquea las imágenes cuando la lista pasa de scroll a
+     * reposo antes mencionado. findViewHolderForAdapterPosition devuelve el
+     * holder si está pintado; si no existe (filas fuera de pantalla) lo
+     * ignoramos: RecyclerView las pintará al entrar.
+     */
+    private fun rebindVisibleItems(recyclerView: RecyclerView) {
+        val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+        val first = layoutManager.findFirstVisibleItemPosition()
+        val last = layoutManager.findLastVisibleItemPosition()
+        for (position in first..last) {
+            val holder = recyclerView
+                .findViewHolderForAdapterPosition(position) as? CharacterListAdapter.ViewHolder
+            holder?.rebind()
+        }
     }
 
     /**
