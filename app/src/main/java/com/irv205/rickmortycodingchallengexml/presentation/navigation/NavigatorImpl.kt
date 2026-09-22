@@ -3,6 +3,7 @@ package com.irv205.rickmortycodingchallengexml.presentation.navigation
 import android.os.Bundle
 import androidx.navigation.NavController
 import com.irv205.rickmortycodingchallengexml.R
+import dagger.Lazy
 import dagger.hilt.android.scopes.ActivityScoped
 import javax.inject.Inject
 
@@ -19,12 +20,22 @@ import javax.inject.Inject
  * de la interfaz Navigator, sin pasar el NavController (la vista solo dice
  * "quiero ir al detalle del id X"; el Navigator ya sabe cómo llegar).
  *
+ * ¿Por qué Lazy<NavController> y no NavController directo? El primer fragment
+ * del grafo (CharacterListFragment) se inyecta MIENTRAS MainActivity infla
+ * su layout (setContentView): la FragmentContainerView todavía no está
+ * adjunta a la Activity, así que resolver el NavController ahí mismo
+ * (Navigation.findNavController -> requireViewById) lanza "ID does not
+ * reference a View inside this Activity". Con Lazy, la resolución se aplaza
+ * hasta el primer .get(), es decir, cuando el usuario pulsa una fila: para
+ * entonces toda la jerarquía de vistas ya está adjunta y el NavController es
+ * localizable.
+ *
  * @ActivityScoped (no @Singleton): el NavController vive por actividad. Una
  * instancia global retendría una referencia caduca tras recrear la activity.
  */
 @ActivityScoped
 class NavigatorImpl @Inject constructor(
-    private val navController: NavController
+    private val navController: Lazy<NavController>
 ) : Navigator {
 
     /**
@@ -34,7 +45,7 @@ class NavigatorImpl @Inject constructor(
      * @param characterId Id del personaje a mostrar en el detalle.
      */
     override fun navigateToCharacterDetails(characterId: Int) {
-        navController.navigate(
+        navController.get().navigate(
             R.id.action_characterListFragment_to_characterDetailsFragment,
             Bundle().apply { putInt(NavigationArg.CHARACTER_ID.key, characterId) }
         )
