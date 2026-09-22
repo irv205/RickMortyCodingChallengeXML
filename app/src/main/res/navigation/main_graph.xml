@@ -20,7 +20,7 @@
     <!-- Destino inicial: la lista de personajes (CharacterListFragment). -->
     <fragment
         android:id="@+id/characterListFragment"
-        android:name="com.irv205.rickmortycodingchallengexml.presentation.character.CharacterListFragment"
+        android:name="com.irv205.rickmortycodingchallengexml.presentation.character.home.CharacterListFragment"
         android:label="@string/fragment_character_list_label"
         tools:layout="@layout/fragment_character_list">
 
@@ -37,7 +37,7 @@
          deliberadamente: es un error de programación, no de ejecución. -->
     <fragment
         android:id="@+id/characterDetailsFragment"
-        android:name="com.irv205.rickmortycodingchallengexml.presentation.character.CharacterDetailsFragment"
+        android:name="com.irv205.rickmortycodingchallengexml.presentation.character.detail.CharacterDetailsFragment"
         android:label="@string/fragment_character_details_label"
         tools:layout="@layout/fragment_character_details">
 

@@ -1,4 +1,4 @@
-package com.irv205.rickmortycodingchallengexml.presentation.character
+package com.irv205.rickmortycodingchallengexml.presentation.character.detail
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,7 +11,10 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.irv205.rickmortycodingchallengexml.databinding.FragmentCharacterDetailsBinding
 import com.irv205.rickmortycodingchallengexml.domain.model.Character
+import com.irv205.rickmortycodingchallengexml.presentation.navigation.NavigationArg
+import com.irv205.rickmortycodingchallengexml.presentation.navigation.Navigator
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
  * ============================================================
@@ -40,6 +43,13 @@ class CharacterDetailsFragment : Fragment() {
     /** ViewModel del detalle, con @HiltViewModel (Hilt lo inyecta). */
     private val viewModel: CharacterDetailsViewModel by viewModels()
 
+    /**
+     * NAVEGADOR (inyectado por Hilt): conoce la clave del argumento characterId.
+     * El fragment no sabe la clave del Bundle; solo pregunta por el id.
+     */
+    @Inject
+    lateinit var navigator: Navigator
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -58,8 +68,8 @@ class CharacterDetailsFragment : Fragment() {
         // Nos suscribimos a los LiveData antes de pedir nada.
         observer()
 
-        // Leemos el id que viajó por navegación y pedimos el personaje.
-        val characterId = requireArguments().getInt("characterId")
+        // Leemos el id (vía el navigator) y pedimos el personaje.
+        val characterId = navigator.getIntArg(requireArguments(), NavigationArg.CHARACTER_ID)
         viewModel.getCharacterById(characterId)
     }
 

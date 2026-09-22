@@ -1,19 +1,18 @@
-package com.irv205.rickmortycodingchallengexml.presentation.character
+package com.irv205.rickmortycodingchallengexml.presentation.character.home
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.irv205.rickmortycodingchallengexml.R
 import com.irv205.rickmortycodingchallengexml.databinding.FragmentCharacterListBinding
+import com.irv205.rickmortycodingchallengexml.presentation.navigation.Navigator
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
  * ============================================================
@@ -58,26 +57,23 @@ class CharacterListFragment : Fragment() {
     private val binding get() = requireNotNull(_binding)
 
     /**
-     * Mismo adaptador que antes, perezoso (se crea solo la 1ª vez que se accede).
-     * Ahora el adaptador recibe un CALLBACK de click: cuando el usuario pulsa una
-     * fila, el propio adaptador nos avisa con el Character pulsado y aquí decidimos
-     * qué hacer: navegar al detalle con su id.
+     * NAVEGADOR (inyectado por Hilt): encapsula TODA la lógica de navegación
+     * (id de la action, claves del Bundle). El fragment solo LLAMA a navegar;
+     * no sabe ni conoce el grafo ni sus argumentos.
      */
-    private val adapter by lazy {
-        CharacterListAdapter { character -> navigateToDetails(character.id) }
-    }
+    @Inject
+    lateinit var navigator: Navigator
 
     /**
-     * NAVEGACIÓN AL DETALLE: findNavController() localiza el NavHost de la app
-     * (la FragmentContainerView) y .navigate() ejecuta la transición declarada
-     * como action en main_graph.xml. Le pasamos el id del personaje en un Bundle:
-     * ese dato viaja como "characterId" y lo lee CharacterDetailsFragment.
+     * Mismo adaptador que antes, perezoso (se crea solo la 1ª vez que se accede).
+     * Ahora el adaptador recibe un CALLBACK de click: cuando el usuario pulsa una
+     * fila, el propio adaptador nos avisa con el Character pulsado y aquí solo
+     * REENVIAMOS al navigator (quien decide la transición y el argumento).
      */
-    private fun navigateToDetails(characterId: Int) {
-        findNavController().navigate(
-            R.id.action_characterListFragment_to_characterDetailsFragment,
-            bundleOf("characterId" to characterId)
-        )
+    private val adapter by lazy {
+        CharacterListAdapter { character ->
+            navigator.navigateToCharacterDetails(character.id)
+        }
     }
 
     /**

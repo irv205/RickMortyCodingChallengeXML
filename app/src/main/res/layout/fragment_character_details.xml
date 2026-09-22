@@ -20,7 +20,7 @@
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:padding="16dp"
-    tools:context=".presentation.character.CharacterDetailsFragment">
+    tools:context=".presentation.character.detail.CharacterDetailsFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/characterDetailsLayout"

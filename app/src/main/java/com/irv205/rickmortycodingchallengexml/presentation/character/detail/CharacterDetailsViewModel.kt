@@ -1,4 +1,4 @@
-package com.irv205.rickmortycodingchallengexml.presentation.character
+package com.irv205.rickmortycodingchallengexml.presentation.character.detail
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

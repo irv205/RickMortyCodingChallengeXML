@@ -16,7 +16,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".presentation.character.CharacterListFragment">
+    tools:context=".presentation.character.home.CharacterListFragment">
 
     <!-- RecyclerView que dibuja la lista de personajes. Cada fila usa item_character.xml -->
     <androidx.recyclerview.widget.RecyclerView
