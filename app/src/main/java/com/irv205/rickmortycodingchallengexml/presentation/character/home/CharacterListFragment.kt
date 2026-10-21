@@ -74,6 +74,12 @@ class CharacterListFragment : Fragment() {
         CharacterListAdapter { character ->
             navigator.navigateToCharacterDetails(character.id)
         }
+
+//        CharacterListAdapter(
+//            onItemClick = {
+//                navigator.navigateToCharacterDetails(it.id)
+//            }
+//        )
     }
 
     /**

@@ -46,6 +46,8 @@ import com.irv205.rickmortycodingchallengexml.domain.model.Character
  *
  * @param onItemClick Callback que recibe el Character de la fila pulsada.
  */
+// val highOrder: () -> Unit = {}
+
 class CharacterListAdapter(
     private val onItemClick: (Character) -> Unit = {}
 ) : ListAdapter<Character, CharacterListAdapter.ViewHolder>(CharacterDiffCallback) {
